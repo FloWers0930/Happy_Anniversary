@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Happy Anniversary</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      font-family: 'Poppins', sans-serif;
+      text-align: center;
+      color: #fff;
+      overflow-x: hidden;
+      position: relative;
+      background: #000; /* fallback */
+    }
+
+    /* Background collage */
+    .background-collage {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      grid-auto-rows: 150px;
+      gap: 5px;
+      z-index: -2;
+      opacity: 0.25;
+    }
+
+    .background-collage img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: blur(1px) brightness(0.8);
+      border-radius: 8px;
+      transition: transform 1s ease-in-out;
+    }
+
+    .background-collage img:hover {
+      transform: scale(1.1);
+      filter: brightness(1);
+    }
+
+    /* Overlay gradient */
+    .background-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -1;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    #date {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+    }
+
+    .slideshow {
+      width: 700px;
+      height: 500px;
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      margin-bottom: 20px; 
+    }
+
+    .slideshow img {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+    }
+
+    .slideshow img.active {
+      opacity: 1;
+    }
+
+    button {
+      background: #fff;
+      color: #a02ba0;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 25px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s;
+      z-index: 5;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    /* Envelope overlay */
+    .envelope-container {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(0px);
+      z-index: 1000;
+      transition: backdrop-filter 0.8s ease;
+    }
+
+    .envelope-container.active {
+      backdrop-filter: blur(8px);
+    }
+
+    .envelope {
+      position: relative;
+      width: 320px;
+      height: 220px;
+      background: #ffb6c1;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      overflow: hidden;
+      perspective: 1000px;
+      transition: opacity 0.8s ease;
+      z-index: 5;
+    }
+
+    .flap {
+      position: absolute;
+      top: 0; left: 0;
+      width: 0;
+      height: 0;
+      border-left: 160px solid transparent;
+      border-right: 160px solid transparent;
+      border-bottom: 110px solid #ff8fab;
+      transform-origin: top center;
+      transition: transform 1s ease;
+      z-index: 10;
+      backface-visibility: hidden;
+    }
+
+    .flap.open {
+      transform: rotateX(180deg);
+      z-index: 1;
+    }
+
+    .envelope:after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 0;
+      height: 0;
+      border-left: 160px solid transparent;
+      border-right: 160px solid transparent;
+      border-top: 110px solid #ff8fab;
+      z-index: 2;
+    }
+
+    .letter {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) translateY(100px) scale(0.9);
+      width: 260px;
+      background: #fff;
+      color: #333;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      text-align: left;
+      font-size: 0.9rem;
+      opacity: 0;
+      transition: all 0.8s ease;
+      z-index: 20;
+    }
+
+    .letter.open {
+      transform: translate(-50%, -50%) translateY(-60px) scale(1);
+      opacity: 1;
+    }
+
+    .close-btn {
+      display: block;
+      margin-top: 15px;
+      background: #a02ba0;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      float: right;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-100vh) scale(0.5); opacity: 0; }
+    }
+    .heart {
+      position: fixed;
+      bottom: -10px;
+      font-size: 20px;
+      color: #fff;
+      animation: float 6s linear infinite;
+      z-index: 0;
+    }
+
+    @media (max-width: 600px) {
+      .slideshow {
+        width: 90%;
+        height: auto;
+      }
+      .envelope {
+        width: 260px;
+        height: 180px;
+      }
+      .letter {
+        width: 220px;
+        font-size: 0.8rem;
+      }
+    }
+
+/* Flower container */
+.corner-flower {
+  position: fixed;
+  bottom: 0;
+  width: 150px;
+  height: 150px;
+  z-index: 1;
+}
+
+.corner-left {
+  left: 0;
+}
+
+.corner-right {
+  right: 0;
+  transform: scaleX(-1); /* Mirror the flower for the right corner */
+}
+
+
+/* Flower containers for corners */
+.corner-flower {
+  position: fixed;
+  bottom: 0;
+  width: 180px;
+  height: 180px;
+  z-index: 2;
+  pointer-events: none; /* Don’t block clicks */
+}
+
+.corner-left {
+  left: 0;
+}
+
+.corner-right {
+  right: 0;
+  transform: scaleX(-1); /* Mirror flower for right corner */
+}
+
+/* Bloom + sway animation */
+.flower {
+  opacity: 0;
+  transform: scale(0.3) rotate(0deg);
+  animation: bloom 3s ease-out forwards, sway 6s ease-in-out infinite 3s;
+  transform-origin: bottom center;
+}
+
+/* Bloom animation */
+@keyframes bloom {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) rotate(-10deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.1) rotate(5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* Gentle swaying motion */
+@keyframes sway {
+  0% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.02) rotate(3deg); }
+  50% { transform: scale(1) rotate(0deg); }
+  75% { transform: scale(1.02) rotate(-3deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+</style>
+
+</style>
+
+  </style>
+</head>
+<body>
+  <!-- Background collage -->
+  <div class="background-collage">
+    <img src="img/24ecbde9-85e8-4d31-b027-3b5b38e75a60.jpg" alt="">
+    <img src="img/6d0915bc-980b-4712-ba55-60ad1713e7b5.jpg" alt="">
+    <img src="img/ec80d5b2-8ec1-426c-b98f-a941938d1560.jpg" alt="">
+    <img src="img/f5357c2d-edc7-4f74-ac13-3a62ad4db879.jpg" alt="">
+    <img src="img/0be9acbe-b7f9-4dcd-a3d0-7fa9e831ec87.jpg" alt="">
+    <img src="img/0f51a7b1-353e-4ab0-afe7-f74dfad98542.jpg" alt="">
+    <img src="img/1e8c4f9e-e72f-430a-9f51-c1e46f66d96e.jpg" alt="">
+    <img src="img/24e662b1-6bc3-489b-bd72-5cba546dfc62.jpg" alt="">
+    <img src="img/2a608a91-b2b7-44f9-a470-c5d26298006e.jpg" alt="">
+    <img src="img/3b0dbb28-10d2-4e03-9f94-d413159d0c92.jpg" alt="">
+    <img src="img/406e0e17-510e-4363-a87f-9efb390427d2.jpg" alt="">
+    <img src="img/4353f7ff-8064-44e7-b1e1-2201d57907e8.jpg" alt="">
+    <img src="img/44204a09-e4fc-40eb-bb4e-fca7368b3442.jpg" alt="">
+    <img src="img/51808c5b-f695-42fe-9bb9-7f6077272e03.jpg" alt="">
+    <img src="img/51816920-399b-45b5-be04-fc9818e3fa09.jpg" alt="">
+    <img src="img/53beb3cd-274d-4425-8359-ee155752b615.jpg" alt="">
+    <img src="img/5d224e7b-bea0-42f6-bd8e-9a2cdd467c3d.jpg" alt="">
+    <img src="img/677d04d5-9ccd-4471-a225-3c83edfd4393.jpg" alt="">
+    <img src="img/6d0915bc-980b-4712-ba55-60ad1713e7b5.jpg" alt="">
+    <img src="img/778eb197-1ea1-4dd6-98ae-5d65086841c0.jpg" alt="">
+    <img src="img/8b49cc87-329b-4586-9260-f2eb35ed943a.jpg" alt="">
+    <img src="img/8ec6e7e8-c042-4897-9566-040eba250c69.jpg" alt="">
+    <img src="img/95c109f2-ffa5-4c48-bd1d-10315fd6defb.jpg" alt="">
+    <img src="img/992b0cdf-2c95-45a8-99e9-10738ddf49e4.jpg" alt="">
+    <img src="img/9f42aa43-9502-4873-a963-442752034286.jpg" alt="">
+    <img src="img/a1060b94-ed05-4c06-9336-ae143d93c730.jpg" alt="">
+    <img src="img/ab0984b0-2c7b-4510-be20-53f7ed28f29d.jpg" alt="">
+    <img src="img/ab65eaf2-cf98-483f-a029-b2f6940fd627.jpg" alt="">
+    <img src="img/cd5d2f68-40be-48c7-a7d5-2f3566418d2f.jpg" alt="">
+    <img src="img/daaf9f7c-2c3c-4a62-9d3e-f5cf97b036a0.jpg" alt="">
+    <img src="img/db0532e9-f623-4a43-badf-2c288eb4e98e.jpg" alt="">
+    <img src="img/dec9d9ff-5da3-4b9f-ac06-dbae9bd06a1d.jpg" alt="">
+    <img src="img/e8709aca-0ece-411a-ac68-349d5dc2320f.jpg" alt="">
+    <img src="img/ec583025-1912-4026-9420-05835198386b.jpg" alt="">
+    <img src="img/24ecbde9-85e8-4d31-b027-3b5b38e75a60.jpg" alt="">
+    <img src="img/6d0915bc-980b-4712-ba55-60ad1713e7b5.jpg" alt="">
+    <img src="img/ec80d5b2-8ec1-426c-b98f-a941938d1560.jpg" alt="">
+    <img src="img/f5357c2d-edc7-4f74-ac13-3a62ad4db879.jpg" alt="">
+    <img src="img/0be9acbe-b7f9-4dcd-a3d0-7fa9e831ec87.jpg" alt="">
+    <img src="img/0f51a7b1-353e-4ab0-afe7-f74dfad98542.jpg" alt="">
+    <img src="img/1e8c4f9e-e72f-430a-9f51-c1e46f66d96e.jpg" alt="">
+    <img src="img/24e662b1-6bc3-489b-bd72-5cba546dfc62.jpg" alt="">
+    <img src="img/2a608a91-b2b7-44f9-a470-c5d26298006e.jpg" alt="">
+    <img src="img/3b0dbb28-10d2-4e03-9f94-d413159d0c92.jpg" alt="">
+    <img src="img/406e0e17-510e-4363-a87f-9efb390427d2.jpg" alt="">
+    <img src="img/4353f7ff-8064-44e7-b1e1-2201d57907e8.jpg" alt="">
+    <img src="img/44204a09-e4fc-40eb-bb4e-fca7368b3442.jpg" alt="">
+    <img src="img/51808c5b-f695-42fe-9bb9-7f6077272e03.jpg" alt="">
+    <img src="img/51816920-399b-45b5-be04-fc9818e3fa09.jpg" alt="">
+    <img src="img/53beb3cd-274d-4425-8359-ee155752b615.jpg" alt="">
+    <img src="img/5d224e7b-bea0-42f6-bd8e-9a2cdd467c3d.jpg" alt="">
+    <img src="img/677d04d5-9ccd-4471-a225-3c83edfd4393.jpg" alt="">
+    <img src="img/6d0915bc-980b-4712-ba55-60ad1713e7b5.jpg" alt="">
+    <img src="img/778eb197-1ea1-4dd6-98ae-5d65086841c0.jpg" alt="">
+    <img src="img/8b49cc87-329b-4586-9260-f2eb35ed943a.jpg" alt="">
+    <img src="img/8ec6e7e8-c042-4897-9566-040eba250c69.jpg" alt="">
+    <img src="img/95c109f2-ffa5-4c48-bd1d-10315fd6defb.jpg" alt="">
+    <img src="img/992b0cdf-2c95-45a8-99e9-10738ddf49e4.jpg" alt="">
+    <img src="img/9f42aa43-9502-4873-a963-442752034286.jpg" alt="">
+    <img src="img/a1060b94-ed05-4c06-9336-ae143d93c730.jpg" alt="">
+    <img src="img/ab0984b0-2c7b-4510-be20-53f7ed28f29d.jpg" alt="">
+    <img src="img/ab65eaf2-cf98-483f-a029-b2f6940fd627.jpg" alt="">
+    
+  </div>
+  <div class="background-overlay"></div>
+
+  <h1>Happy 2nd Anniversary 💜</h1>
+  <div id="date"></div>
+
+  <audio id="bg-music" autoplay loop>
+    <source src="/monthsary/Iframe I Love You Too Much _ The Book of Life (Original Motion Picture Soundtrack) [hOD_iiJKLxk].mp3" type="audio/mpeg">
+    Your browser does not support the audio tag.
+  </audio>  
+
+  <!-- Slideshow -->
+  <div class="slideshow">
+    <img src="img/24ecbde9-85e8-4d31-b027-3b5b38e75a60.jpg" class="active">
+    <img src="img/6d0915bc-980b-4712-ba55-60ad1713e7b5.jpg" alt="">
+    <img src="img/ec80d5b2-8ec1-426c-b98f-a941938d1560.jpg" alt="">
+    <img src="img/f5357c2d-edc7-4f74-ac13-3a62ad4db879.jpg" alt="">
+    <img src="img/0be9acbe-b7f9-4dcd-a3d0-7fa9e831ec87.jpg" alt="">
+    <img src="img/0f51a7b1-353e-4ab0-afe7-f74dfad98542.jpg" alt="">
+    <img src="img/1e8c4f9e-e72f-430a-9f51-c1e46f66d96e.jpg" alt="">
+    <img src="img/24e662b1-6bc3-489b-bd72-5cba546dfc62.jpg" alt="">
+    <img src="img/2a608a91-b2b7-44f9-a470-c5d26298006e.jpg" alt="">
+    <img src="img/3b0dbb28-10d2-4e03-9f94-d413159d0c92.jpg" alt="">
+    <img src="img/406e0e17-510e-4363-a87f-9efb390427d2.jpg" alt="">
+    <img src="img/4353f7ff-8064-44e7-b1e1-2201d57907e8.jpg" alt="">
+    <img src="img/44204a09-e4fc-40eb-bb4e-fca7368b3442.jpg" alt="">
+    <img src="img/51808c5b-f695-42fe-9bb9-7f6077272e03.jpg" alt="">
+    <img src="img/51816920-399b-45b5-be04-fc9818e3fa09.jpg" alt="">
+    <img src="img/53beb3cd-274d-4425-8359-ee155752b615.jpg" alt="">
+    <img src="img/5d224e7b-bea0-42f6-bd8e-9a2cdd467c3d.jpg" alt="">
+    <img src="img/677d04d5-9ccd-4471-a225-3c83edfd4393.jpg" alt="">
+    <img src="img/6d0915bc-980b-4712-ba55-60ad1713e7b5.jpg" alt="">
+    <img src="img/778eb197-1ea1-4dd6-98ae-5d65086841c0.jpg" alt="">
+    <img src="img/8b49cc87-329b-4586-9260-f2eb35ed943a.jpg" alt="">
+    <img src="img/8ec6e7e8-c042-4897-9566-040eba250c69.jpg" alt="">
+    <img src="img/95c109f2-ffa5-4c48-bd1d-10315fd6defb.jpg" alt="">
+    <img src="img/992b0cdf-2c95-45a8-99e9-10738ddf49e4.jpg" alt="">
+    <img src="img/9f42aa43-9502-4873-a963-442752034286.jpg" alt="">
+    <img src="img/a1060b94-ed05-4c06-9336-ae143d93c730.jpg" alt="">
+    <img src="img/ab0984b0-2c7b-4510-be20-53f7ed28f29d.jpg" alt="">
+    <img src="img/ab65eaf2-cf98-483f-a029-b2f6940fd627.jpg" alt="">
+    <img src="img/cd5d2f68-40be-48c7-a7d5-2f3566418d2f.jpg" alt="">
+    <img src="img/daaf9f7c-2c3c-4a62-9d3e-f5cf97b036a0.jpg" alt="">
+    <img src="img/db0532e9-f623-4a43-badf-2c288eb4e98e.jpg" alt="">
+    <img src="img/dec9d9ff-5da3-4b9f-ac06-dbae9bd06a1d.jpg" alt="">
+    <img src="img/e8709aca-0ece-411a-ac68-349d5dc2320f.jpg" alt="">
+    <img src="img/ec583025-1912-4026-9420-05835198386b.jpg" alt="">
+    
+  </div>
+
+  <button onclick="openEnvelope()">Click for Surprise</button>
+
+  <!-- Envelope + Letter -->
+  <div class="envelope-container" id="envelopeContainer">
+    <div class="envelope" id="envelopeBox">
+      <div class="flap" id="flap"></div>
+    </div>
+    <div class="letter" id="letter">
+      <p><i>My Love</i>💕,</p>
+      <p>
+        Happy 2nd Annivesary to us! 💕<br><br>
+        It feels like just yesterday when our story began, yet here we are — 
+        two years of love, laughter, and countless memories later. 
+        Every day with you has been a blessing, and every moment has made me love you even more.  
+        <br><br>
+        You’ve been my joy in the good times, my strength in the hard times, and my safe place in all times. 
+        With you, I’ve found not only love, but also a partner, a best friend, and the most beautiful part of my life.
+        <br><br>
+        Like The Book of Life said: <br>
+        <b>“Write your own story.”</b><br>
+        And that’s exactly what we’ve been doing — writing a love story that’s ours alone, 
+        filled with dreams, adventures, and a love that only grows stronger with time.
+        <br><br>
+        Two years down, and forever to go. 
+        I promise to keep choosing you every single day, 
+        to love you through every season of our lives, 
+        and to keep writing this story with you, side by side.
+        <br><br>
+        <p>Forever yours,</p>
+        <p>Lawrenz</p>
+      </p>
+      <button class="close-btn" onclick="closeEnvelope()">Close</button>
+    </div>
+  </div>
+
+<!-- Lily Flowers -->
+<circle cx="80" cy="45" r="5" fill="yellow"/>
+
+<div class="corner-flower corner-left">
+  <svg class="flower" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
+    <g fill="none" stroke="green" stroke-width="3">
+      <path d="M50 120 Q50 100 72 53"/>
+    </g>
+    <g fill="pink" stroke="purple" stroke-width="2">
+      <circle cx="80" cy="40" r="10"/>
+      <circle cx="70" cy="45" r="8"/>
+      <circle cx="90" cy="45" r="8"/>
+      <circle cx="80  " cy="53" r="8"/>
+    </g>
+    <circle cx="80" cy="45" r="5" fill="yellow"/>
+  </svg>
+</div>
+
+<div class="corner-flower corner-left">
+  <svg class="flower" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
+    <g fill="none" stroke="green" stroke-width="3">
+      <path d="M50 120 Q50 50 50 10"/>
+    </g>
+    <g fill="pink" stroke="purple" stroke-width="2">
+      <circle cx="50" cy="10" r="10"/>
+      <circle cx="40" cy="13" r="8"/>
+      <circle cx="60" cy="13" r="8"/>
+      <circle cx="50  " cy="16" r="8"/>
+    </g>
+    <circle cx="50" cy="10" r="5" fill="yellow"/>
+  </svg>
+</div>
+
+<div class="corner-flower corner-left">
+  <svg class="flower" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
+    <g fill="none" stroke="green" stroke-width="3">
+      <path d="M50 120 Q50 80 30 45"/>
+    </g>
+    <g fill="pink" stroke="purple" stroke-width="2">
+       <circle cx="20" cy="30" r="10"/>
+      <circle cx="10" cy="35" r="8"/>
+      <circle cx="30" cy="35" r="8"/>
+      <circle cx="20" cy="43" r="8"/>
+    </g>
+    <circle cx="20" cy="32" r="5" fill="yellow"/>
+  </svg>
+</div>
+
+<!-- Right bottom flower --> 
+<div class="corner-flower corner-right">
+  <svg class="flower" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
+    <g fill="none" stroke="green" stroke-width="3">
+      <path d="M50 120 Q50 80 30 45"/>
+    </g>
+    <g fill="pink" stroke="purple" stroke-width="2">
+      <circle cx="80" cy="40" r="10"/>
+      <circle cx="70" cy="45" r="8"/>
+      <circle cx="90" cy="45" r="8"/>
+      <circle cx="80  " cy="53" r="8"/>
+    </g>
+    <circle cx="80" cy="45" r="5" fill="yellow"/>
+  </svg>
+</div>
+
+
+<!-- Right bottom flower --> 
+<div class="corner-flower corner-right">
+  <svg class="flower" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
+    <g fill="none" stroke="green" stroke-width="3">
+      <path d="M50 120 Q50 100 72 53"/>
+    </g>
+    <g fill="pink" stroke="purple" stroke-width="2">
+       <circle cx="20" cy="30" r="10"/>
+      <circle cx="10" cy="35" r="8"/>
+      <circle cx="30" cy="35" r="8"/>
+      <circle cx="20" cy="43" r="8"/>
+    </g>
+    <circle cx="20" cy="32" r="5" fill="yellow"/>
+  </svg>
+</div>
+
+<!-- Right bottom flower --> 
+<div class="corner-flower corner-right">
+  <svg class="flower" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
+    <g fill="none" stroke="green" stroke-width="3">
+      <path d="M50 120 Q50 50 50 10"/>
+    </g>
+    <g fill="pink" stroke="purple" stroke-width="2">
+       <circle cx="50" cy="10" r="10"/>
+      <circle cx="60" cy="13" r="8"/>
+      <circle cx="40" cy="13" r="8"/>
+      <circle cx="50" cy="15" r="8"/>
+    </g>
+    <circle cx="50" cy="10" r="5" fill="yellow"/>
+  </svg>
+</div>
+
+  <script>
+// Date (always September 30)
+const dateElement = document.getElementById("date");
+const mothsaryMonth = "September";
+const mothsaryDay = 30;
+
+dateElement.textContent = "Our Anniversary: " + mothsaryMonth + " " + mothsaryDay;
+
+
+    // Slideshow
+    let slides = document.querySelectorAll('.slideshow img');
+    let current = 0;
+    setInterval(() => {
+      slides[current].classList.remove('active');
+      current = (current + 1) % slides.length;
+      slides[current].classList.add('active');
+    }, 3000);
+
+    // Envelope logic
+    const flap = document.getElementById("flap");
+    const letter = document.getElementById("letter");
+    const envelopeContainer = document.getElementById("envelopeContainer");
+    const envelopeBox = document.getElementById("envelopeBox");
+
+    function openEnvelope() {
+      envelopeContainer.style.display = "flex";
+      setTimeout(() => {
+        envelopeContainer.classList.add("active");
+        flap.classList.add("open");
+      }, 100);
+      setTimeout(() => {
+        envelopeBox.style.opacity = "0";
+        letter.classList.add("open");
+      }, 1500); 
+    }
+
+    function closeEnvelope() {
+      letter.classList.remove("open");
+      envelopeBox.style.opacity = "1";
+      envelopeContainer.classList.remove("active");
+      setTimeout(() => {
+        flap.classList.remove("open");
+      }, 600);
+      setTimeout(() => {
+        envelopeContainer.style.display = "none";
+      }, 1600);
+    }
+
+// Floating hearts
+function createHeart() {
+  const heart = document.createElement("div");
+  heart.classList.add("heart");
+  heart.textContent = "🩷";
+  heart.style.left = Math.random() * 100 + "vw";
+  heart.style.fontSize = Math.random() * 20 + 15 + "px"; // random size
+  heart.style.animationDuration = Math.random() * 3 + 4 + "s"; // random speed
+  document.body.appendChild(heart);
+
+  setTimeout(() => {
+    heart.remove();
+  }, 7000);
+}
+
+setInterval(createHeart, 500);
+
+    const bgMusic = document.getElementById("bg-music");
+    document.body.addEventListener("click", () => {
+      bgMusic.play();
+    }, { once: true });
+  </script>
+</body>
+</html>
